@@ -38,7 +38,7 @@ def seed_data():
         session.add(example_project)
         session.commit()
         session.refresh(example_project)
-        print(f"  ✓ Created project: {example_project.name} (ID: {example_project.id})")
+        print(f"  [OK] Created project: {example_project.name} (ID: {example_project.id})")
 
         # Create Agents
         print("\n[2/3] Creating agents...")
@@ -72,8 +72,8 @@ def seed_data():
         session.commit()
         session.refresh(pm_agent)
         session.refresh(lead_dev_agent)
-        print(f"  ✓ Created agent: {pm_agent.name} (ID: {pm_agent.id})")
-        print(f"  ✓ Created agent: {lead_dev_agent.name} (ID: {lead_dev_agent.id})")
+        print(f"  [OK] Created agent: {pm_agent.name} (ID: {pm_agent.id})")
+        print(f"  [OK] Created agent: {lead_dev_agent.name} (ID: {lead_dev_agent.id})")
 
         # Assign agents to project
         pm_assignment = AgentProjectAssignment(
@@ -85,7 +85,7 @@ def seed_data():
         session.add(pm_assignment)
         session.add(dev_assignment)
         session.commit()
-        print(f"  ✓ Assigned agents to {example_project.name}")
+        print(f"  [OK] Assigned agents to {example_project.name}")
 
         # Create sample tasks
         print("\n[3/3] Creating sample tasks...")
@@ -153,7 +153,7 @@ def seed_data():
             session.add(task)
 
         session.commit()
-        print(f"  ✓ Created {len(tasks)} sample tasks")
+        print(f"  [OK] Created {len(tasks)} sample tasks")
 
         print("\n" + "=" * 60)
         print("SEEDING COMPLETE!")
@@ -170,7 +170,7 @@ def seed_data():
 
     except Exception as e:
         session.rollback()
-        print(f"\n❌ Error during seeding: {e}")
+        print(f"\n[ERROR] Error during seeding: {e}")
         sys.exit(1)
     finally:
         session.close()

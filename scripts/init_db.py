@@ -27,7 +27,7 @@ def create_directories():
     for directory in directories:
         dir_path = base_path / directory
         dir_path.mkdir(parents=True, exist_ok=True)
-        print(f"✓ Created directory: {dir_path}")
+        print(f"[OK] Created directory: {dir_path}")
 
 
 def initialize_database():
@@ -43,7 +43,7 @@ def initialize_database():
     # Create database engine
     print("\n[Step 2/3] Connecting to database...")
     engine = create_db_engine(echo=False)
-    print(f"✓ Connected to database: {engine.url}")
+    print(f"[OK] Connected to database: {engine.url}")
 
     # Create all tables
     print("\n[Step 3/3] Creating database schema...")
@@ -55,7 +55,7 @@ def initialize_database():
     inspector = inspect(engine)
     tables = inspector.get_table_names()
 
-    print(f"\n✓ Created {len(tables)} tables:")
+    print(f"\n[OK] Created {len(tables)} tables:")
     for table in tables:
         print(f"  - {table}")
 
@@ -74,5 +74,7 @@ if __name__ == "__main__":
     try:
         initialize_database()
     except Exception as e:
-        print(f"\n❌ Error during initialization: {e}")
+        print(f"\n[ERROR] Error during initialization: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)

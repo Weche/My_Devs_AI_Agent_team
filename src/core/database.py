@@ -14,6 +14,7 @@ from sqlalchemy import (
     Boolean,
     ForeignKey,
     Index,
+    text,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Session
@@ -218,8 +219,9 @@ def create_db_engine(url: Optional[str] = None, echo: bool = False):
     # Enable WAL mode
     if db_url.startswith("sqlite"):
         with engine.connect() as conn:
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.execute("PRAGMA foreign_keys=ON")
+            conn.execute(text("PRAGMA journal_mode=WAL"))
+            conn.execute(text("PRAGMA foreign_keys=ON"))
+            conn.commit()
 
     return engine
 
