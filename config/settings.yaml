@@ -1,0 +1,26 @@
+openai:
+  default_model: "gpt-4o-mini"
+  max_tokens: 300
+  timeout: 30
+
+database:
+  url: "sqlite:///data/database/pm_system.db"
+  echo: false
+  pool_size: 5
+  max_overflow: 10
+
+telegram:
+  polling_interval: 1.0
+  rate_limit_seconds: 2
+  max_retries: 3
+
+cost_tracking:
+  daily_budget_alert: 1.00
+  monthly_budget_limit: 20.00
+  log_every_call: true
+  export_csv: true
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "data/logs/app.log"
