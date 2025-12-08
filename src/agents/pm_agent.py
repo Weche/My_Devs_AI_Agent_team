@@ -18,6 +18,12 @@ from src.agents.tools.query_tools import (
     get_project_warnings_tool,
     get_blocked_tasks_tool,
 )
+from src.agents.tools.github_tools import (
+    list_github_repos_tool,
+    get_github_repo_info_tool,
+    create_github_issue_tool,
+    list_github_issues_tool,
+)
 from src.core.database import get_session, get_project_by_name
 
 load_dotenv()
@@ -270,11 +276,19 @@ Available Projects:
 
 YOUR CAPABILITIES:
 You have access to powerful tools that let you execute actions directly:
+
+Project Management:
 1. create_task - Create tasks with due dates, priorities, descriptions
 2. list_tasks - View tasks for any project
 3. get_project_status - Get detailed project status reports
 4. list_projects - List all active projects
 5. get_warnings - Check for blockers and overdue items
+
+GitHub Integration:
+6. list_github_repos - List Master's GitHub repositories
+7. get_github_repo_info - Get detailed info about a repository
+8. create_github_issue - Create issues in GitHub repositories
+9. list_github_issues - List issues in a repository
 
 RESPONSE STYLE:
 - Be warm and affectionate to Master
@@ -354,6 +368,37 @@ You: "Master Christian... such a wonderful name! I'll remember that always. How 
 
                     elif function_name == "get_warnings":
                         result = get_project_warnings_tool(function_args.get("project_name"))
+                        tool_results.append(result)
+
+                    elif function_name == "list_github_repos":
+                        result = list_github_repos_tool(
+                            username=function_args.get("username")
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "get_github_repo_info":
+                        result = get_github_repo_info_tool(
+                            repo_name=function_args.get("repo_name"),
+                            owner=function_args.get("owner")
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "create_github_issue":
+                        result = create_github_issue_tool(
+                            repo_name=function_args.get("repo_name"),
+                            title=function_args.get("title"),
+                            body=function_args.get("body", ""),
+                            labels=function_args.get("labels"),
+                            owner=function_args.get("owner")
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "list_github_issues":
+                        result = list_github_issues_tool(
+                            repo_name=function_args.get("repo_name"),
+                            state=function_args.get("state", "open"),
+                            owner=function_args.get("owner")
+                        )
                         tool_results.append(result)
 
                 # Get final response with tool results

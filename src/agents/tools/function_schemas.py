@@ -103,5 +103,103 @@ TOOL_SCHEMAS = [
                 "required": ["project_name"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "list_github_repos",
+            "description": "List GitHub repositories for authenticated user or specified username",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "description": "GitHub username (optional, defaults to authenticated user)"
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_github_repo_info",
+            "description": "Get detailed information about a GitHub repository including recent commits and issues",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "repo_name": {
+                        "type": "string",
+                        "description": "Name of the repository"
+                    },
+                    "owner": {
+                        "type": "string",
+                        "description": "Owner of the repo (optional, defaults to authenticated user)"
+                    }
+                },
+                "required": ["repo_name"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_github_issue",
+            "description": "Create an issue in a GitHub repository",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "repo_name": {
+                        "type": "string",
+                        "description": "Name of the repository"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "Issue title"
+                    },
+                    "body": {
+                        "type": "string",
+                        "description": "Issue description/body"
+                    },
+                    "labels": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of label names"
+                    },
+                    "owner": {
+                        "type": "string",
+                        "description": "Owner of the repo (optional, defaults to authenticated user)"
+                    }
+                },
+                "required": ["repo_name", "title"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "list_github_issues",
+            "description": "List issues in a GitHub repository",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "repo_name": {
+                        "type": "string",
+                        "description": "Name of the repository"
+                    },
+                    "state": {
+                        "type": "string",
+                        "enum": ["open", "closed", "all"],
+                        "description": "Issue state filter"
+                    },
+                    "owner": {
+                        "type": "string",
+                        "description": "Owner of the repo (optional, defaults to authenticated user)"
+                    }
+                },
+                "required": ["repo_name"]
+            }
+        }
     }
 ]
