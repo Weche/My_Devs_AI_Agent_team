@@ -1,1 +1,1 @@
-"""Telegram bot interface (Milestone 2)"""
+"""Telegram bot interface for project management"""
