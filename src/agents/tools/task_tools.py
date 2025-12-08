@@ -18,6 +18,7 @@ def create_task_tool(
     description: str = "",
     priority: str = "medium",
     assigned_to: Optional[str] = None,
+    due_date: Optional[str] = None,
 ) -> str:
     """
     Create a new task for a project.
@@ -28,10 +29,13 @@ def create_task_tool(
         description: Task description (optional)
         priority: Priority level (critical, high, medium, low)
         assigned_to: Agent to assign task to (optional)
+        due_date: Due date in ISO format or natural language (optional)
 
     Returns:
         Success message with task ID
     """
+    from dateutil import parser
+
     session = get_session()
 
     try:
@@ -52,6 +56,16 @@ def create_task_tool(
             elif any(word in title_lower for word in ["low", "minor", "someday"]):
                 priority = "low"
 
+        # Parse due date if provided
+        parsed_due_date = None
+        if due_date:
+            try:
+                # Try parsing natural language dates like "next Saturday", "Friday", etc.
+                parsed_due_date = parser.parse(due_date, fuzzy=True)
+            except:
+                # If parsing fails, leave as None
+                pass
+
         # Create task
         task = Task(
             project_id=project.id,
@@ -61,13 +75,15 @@ def create_task_tool(
             assigned_to=assigned_to,
             created_by="pm_agent",
             status="todo",
+            due_date=parsed_due_date,
         )
 
         session.add(task)
         session.commit()
         session.refresh(task)
 
-        return f"✓ Created task #{task.id}: {title} (priority: {priority})"
+        due_str = f", due: {parsed_due_date.strftime('%Y-%m-%d')}" if parsed_due_date else ""
+        return f"✓ Created task #{task.id}: {title} (priority: {priority}{due_str})"
 
     except Exception as e:
         session.rollback()
