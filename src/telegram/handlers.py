@@ -24,6 +24,20 @@ def is_authorized(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
     return user_id in authorized_users
 
 
+def parse_project_name(args_text: str) -> str:
+    """Parse project name from command arguments, removing quotes if present"""
+    # Remove leading/trailing whitespace
+    args_text = args_text.strip()
+
+    # Remove quotes if present
+    if args_text.startswith('"') and args_text.endswith('"'):
+        return args_text[1:-1]
+    elif args_text.startswith("'") and args_text.endswith("'"):
+        return args_text[1:-1]
+
+    return args_text
+
+
 async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command"""
     if not is_authorized(update, context):
@@ -37,11 +51,11 @@ Welcome! I'm your AI-powered project management assistant.
 Available Commands:
 
 Project Management:
-/status <project> - Get project status
+/projects - List all your projects
+/status <project> - Get PM status update
 /tasks <project> - List all tasks
 /create <project> <title> - Create new task
 /warnings <project> - Show warnings
-/projects - List all projects
 
 Cost Tracking:
 /costs - View today's API costs
@@ -52,8 +66,15 @@ Help:
 Example Usage:
 /projects
 /status Example Project
-/tasks Yohga - init
-/create "Veggies list" Setup database
+/status Yohga - init
+/tasks Veggies list
+/create "Yohga - init" Define requirements
+/create "Reporting Analytics Dashboards" Setup KPIs
+
+Tips:
+- Use quotes for multi-word projects: "Veggies list"
+- Or skip quotes: Veggies list (works too!)
+- Both formats work the same way now
 
 Let's manage your projects!
 """
@@ -105,11 +126,12 @@ async def status_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not context.args:
         await update.message.reply_text(
-            "Usage: /status <project name>\n\nExample:\n/status Example Project"
+            "Usage: /status <project name>\n\nExample:\n/status Example Project\n/status Yohga - init"
         )
         return
 
-    project_name = " ".join(context.args)
+    # Parse project name and remove quotes
+    project_name = parse_project_name(" ".join(context.args))
 
     await update.message.reply_text(f"Getting status for {project_name}...")
 
@@ -132,11 +154,12 @@ async def tasks_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not context.args:
         await update.message.reply_text(
-            "Usage: /tasks <project name>\n\nExample:\n/tasks Example Project"
+            "Usage: /tasks <project name>\n\nExample:\n/tasks Example Project\n/tasks Yohga - init"
         )
         return
 
-    project_name = " ".join(context.args)
+    # Parse project name and remove quotes
+    project_name = parse_project_name(" ".join(context.args))
 
     await update.message.reply_text(f"Loading tasks for {project_name}...")
 
@@ -191,14 +214,15 @@ async def create_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Unauthorized")
         return
 
-    if len(context.args) < 2:
+    if not context.args:
         await update.message.reply_text(
-            'Usage: /create <project> <task title>\n\nExample:\n/create "Example Project" Setup development environment'
+            'Usage: /create <project> <task title>\n\nExamples:\n/create "Yohga - init" Define requirements\n/create "Example Project" Fix bug'
         )
         return
 
     args_text = " ".join(context.args)
 
+    # Try to parse quoted project name first
     if args_text.startswith('"'):
         closing_quote = args_text.find('"', 1)
         if closing_quote == -1:
@@ -207,12 +231,28 @@ async def create_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         project_name = args_text[1:closing_quote]
         task_title = args_text[closing_quote + 1:].strip()
+    elif args_text.startswith("'"):
+        closing_quote = args_text.find("'", 1)
+        if closing_quote == -1:
+            await update.message.reply_text("Unclosed quote in project name")
+            return
+
+        project_name = args_text[1:closing_quote]
+        task_title = args_text[closing_quote + 1:].strip()
     else:
+        # No quotes - split on first space
         parts = args_text.split(maxsplit=1)
         if len(parts) < 2:
             await update.message.reply_text("Please provide both project name and task title")
             return
         project_name, task_title = parts
+
+    # Validate task title is not empty
+    if not task_title or task_title.strip() == "":
+        await update.message.reply_text(
+            f"Error: Task title cannot be empty!\n\nUsage:\n/create \"{project_name}\" <task title>"
+        )
+        return
 
     await update.message.reply_text(f"Creating task in {project_name}...")
 
@@ -234,11 +274,12 @@ async def warnings_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not context.args:
         await update.message.reply_text(
-            "Usage: /warnings <project name>\n\nExample:\n/warnings Example Project"
+            "Usage: /warnings <project name>\n\nExample:\n/warnings Example Project\n/warnings Yohga - init"
         )
         return
 
-    project_name = " ".join(context.args)
+    # Parse project name and remove quotes
+    project_name = parse_project_name(" ".join(context.args))
 
     await update.message.reply_text(f"Checking warnings for {project_name}...")
 
