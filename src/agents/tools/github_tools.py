@@ -265,3 +265,66 @@ def list_github_issues_tool(
         return f"Error listing issues: {e.response.status_code}"
     except Exception as e:
         return f"Error listing issues: {str(e)}"
+
+
+def create_github_repo_tool(
+    repo_name: str,
+    description: str = "",
+    private: bool = False,
+    auto_init: bool = True
+) -> str:
+    """
+    Create a new GitHub repository.
+
+    Args:
+        repo_name: Name of the repository
+        description: Repository description (optional)
+        private: Whether the repo should be private (default: False)
+        auto_init: Initialize with README (default: True)
+
+    Returns:
+        Success message with repository URL
+    """
+    try:
+        headers = get_github_headers()
+
+        # Create repository
+        url = "https://api.github.com/user/repos"
+
+        data = {
+            "name": repo_name,
+            "description": description,
+            "private": private,
+            "auto_init": auto_init,
+            "has_issues": True,
+            "has_projects": True,
+            "has_wiki": False
+        }
+
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
+
+        repo = response.json()
+
+        visibility = "Private" if private else "Public"
+        return (
+            f"✓ Created repository: {repo['full_name']}\n"
+            f"Visibility: {visibility}\n"
+            f"Description: {description or 'No description'}\n"
+            f"URL: {repo['html_url']}\n"
+            f"Clone: {repo['clone_url']}"
+        )
+
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 422:
+            error_data = e.response.json()
+            if "errors" in error_data:
+                errors = error_data["errors"]
+                if any("already exists" in err.get("message", "").lower() for err in errors):
+                    return f"Error: Repository '{repo_name}' already exists"
+            return f"Error: {error_data.get('message', 'Validation failed')}"
+        elif e.response.status_code == 403:
+            return "Error: Insufficient permissions to create repository. Check GitHub token scopes."
+        return f"Error creating repository: {e.response.status_code} - {e.response.text}"
+    except Exception as e:
+        return f"Error creating repository: {str(e)}"

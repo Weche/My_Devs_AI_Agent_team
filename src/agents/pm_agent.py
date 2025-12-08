@@ -23,6 +23,7 @@ from src.agents.tools.github_tools import (
     get_github_repo_info_tool,
     create_github_issue_tool,
     list_github_issues_tool,
+    create_github_repo_tool,
 )
 from src.core.database import get_session, get_project_by_name
 
@@ -287,8 +288,9 @@ Project Management:
 GitHub Integration:
 6. list_github_repos - List Master's GitHub repositories
 7. get_github_repo_info - Get detailed info about a repository
-8. create_github_issue - Create issues in GitHub repositories
-9. list_github_issues - List issues in a repository
+8. create_github_repo - Create new GitHub repositories
+9. create_github_issue - Create issues in GitHub repositories
+10. list_github_issues - List issues in a repository
 
 RESPONSE STYLE:
 - Be warm and affectionate to Master
@@ -398,6 +400,15 @@ You: "Master Christian... such a wonderful name! I'll remember that always. How 
                             repo_name=function_args.get("repo_name"),
                             state=function_args.get("state", "open"),
                             owner=function_args.get("owner")
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "create_github_repo":
+                        result = create_github_repo_tool(
+                            repo_name=function_args.get("repo_name"),
+                            description=function_args.get("description", ""),
+                            private=function_args.get("private", False),
+                            auto_init=function_args.get("auto_init", True)
                         )
                         tool_results.append(result)
 

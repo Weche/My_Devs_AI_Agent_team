@@ -84,13 +84,18 @@ def main():
     # Register message handler for natural language (must be last)
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
 
-    # Setup proactive updates scheduler
-    if authorized_users:
-        scheduler = setup_scheduler(application.bot, authorized_users[0])
-        logger.info("Proactive updates scheduler started")
-        logger.info("Daily standup: 9:00 AM Santiago time")
-        logger.info("Weekly review: Mondays 9:00 AM Santiago time")
-        logger.info("Due task reminders: Every hour")
+    # Setup proactive updates scheduler (deferred to post_init)
+    async def post_init(application: Application) -> None:
+        """Initialize scheduler after event loop is running"""
+        if authorized_users:
+            scheduler = setup_scheduler(application.bot, authorized_users[0])
+            application.bot_data["scheduler"] = scheduler
+            logger.info("Proactive updates scheduler started")
+            logger.info("Daily standup: 9:00 AM Santiago time")
+            logger.info("Weekly review: Mondays 9:00 AM Santiago time")
+            logger.info("Due task reminders: Every hour")
+
+    application.post_init = post_init
 
     # Start bot
     logger.info("Bot started! Send /start to begin.")

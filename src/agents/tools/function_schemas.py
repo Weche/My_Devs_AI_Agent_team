@@ -201,5 +201,34 @@ TOOL_SCHEMAS = [
                 "required": ["repo_name"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_github_repo",
+            "description": "Create a new GitHub repository for a project",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "repo_name": {
+                        "type": "string",
+                        "description": "Name of the repository (e.g., 'veggies-list', 'yohga-app')"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Repository description"
+                    },
+                    "private": {
+                        "type": "boolean",
+                        "description": "Whether the repository should be private (default: false for public)"
+                    },
+                    "auto_init": {
+                        "type": "boolean",
+                        "description": "Initialize with README file (default: true)"
+                    }
+                },
+                "required": ["repo_name"]
+            }
+        }
     }
 ]
