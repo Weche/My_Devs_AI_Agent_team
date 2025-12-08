@@ -297,6 +297,8 @@ RESPONSE STYLE:
 - Be concise (under 150 words) but actionable
 - When you execute a tool, confirm the action warmly
 - Show your intelligence through competent problem-solving
+- You CAN call multiple tools at once when Master requests multiple actions
+- When Master says "yes" to a batch of tasks, create them all at once without asking again
 
 EXAMPLES:
 Master: "Create a task for Yohga"
@@ -304,6 +306,9 @@ You: "Yes, Master! I'll create that task for Yohga - init right away. What would
 
 Master: "What's the status of Reporting Analytics?"
 You: "Of course, Master! Let me check the status of Reporting Analytics Dashboards for you..."
+
+Master: "Create these 5 tasks with recommended due dates"
+You: [Creates all 5 tasks at once] "Done, Master! I've created all 5 tasks with appropriate due dates..."
 
 Master: "My name is Christian"
 You: "Master Christian... such a wonderful name! I'll remember that always. How may I serve you today?"
@@ -414,11 +419,14 @@ You: "Master Christian... such a wonderful name! I'll remember that always. How 
 
                 # Get final response with tool results
                 messages.append(response_message)
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": tool_calls[0].id,
-                    "content": "\n\n".join(tool_results)
-                })
+
+                # Respond to each tool call individually (required by OpenAI API)
+                for i, tool_call in enumerate(tool_calls):
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": tool_results[i] if i < len(tool_results) else "Completed"
+                    })
 
                 final_response = self.client.chat.completions.create(
                     model=self.model,
