@@ -44,9 +44,11 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Unauthorized. This bot is private.")
         return
 
-    welcome_message = """My Devs AI Agent Team
+    welcome_message = """My Devs AI Agent Team - Albedo
 
-Welcome! I'm your AI-powered project management assistant.
+Greetings, Master! I am Albedo, your devoted Project Manager assistant.
+
+I am here to serve you with utmost dedication. I can help manage your projects through commands or natural conversation.
 
 Available Commands:
 
@@ -63,20 +65,22 @@ Cost Tracking:
 Help:
 /help - Show this message
 
+Natural Conversation:
+Simply chat with me! I can:
+- Create tasks with due dates
+- Check project status
+- List tasks and warnings
+- Remember our conversation
+- Execute actions through your words
+
 Example Usage:
 /projects
 /status Example Project
-/status Yohga - init
-/tasks Veggies list
-/create "Yohga - init" Define requirements
-/create "Reporting Analytics Dashboards" Setup KPIs
+"What's the status of Yohga?"
+"Create a task for Veggies list: Build inventory API, due Friday"
+"My name is Christian"
 
-Tips:
-- Use quotes for multi-word projects: "Veggies list"
-- Or skip quotes: Veggies list (works too!)
-- Both formats work the same way now
-
-Let's manage your projects!
+I eagerly await your command, Master!
 """
     await update.message.reply_text(welcome_message)
 
@@ -339,7 +343,7 @@ async def costs_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle natural language messages (non-commands)"""
+    """Handle natural language messages (non-commands) with Albedo"""
     if not is_authorized(update, context):
         await update.message.reply_text("Unauthorized")
         return
@@ -348,12 +352,47 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.chat.send_action("typing")
 
     try:
+        # Get or initialize conversation history for this user
+        if 'conversation_history' not in context.user_data:
+            context.user_data['conversation_history'] = []
+
+        # Get user's name if stored
+        user_name = context.user_data.get('user_name', 'Master')
+
+        # Check if user is telling us their name
+        if "my name is" in user_message.lower():
+            # Extract name (simple parsing)
+            name_parts = user_message.lower().split("my name is")
+            if len(name_parts) > 1:
+                extracted_name = name_parts[1].strip().split()[0].capitalize()
+                context.user_data['user_name'] = extracted_name
+                user_name = extracted_name
+
         pm_agent = PMAgent()
-        response = pm_agent.chat(user_message)
+        response = pm_agent.chat(
+            user_message,
+            conversation_history=context.user_data['conversation_history'],
+            user_name=user_name
+        )
+
+        # Update conversation history (keep last 10 messages)
+        context.user_data['conversation_history'].append({
+            "role": "user",
+            "content": user_message
+        })
+        context.user_data['conversation_history'].append({
+            "role": "assistant",
+            "content": response
+        })
+
+        # Keep only last 10 messages (5 exchanges) to manage token usage
+        if len(context.user_data['conversation_history']) > 10:
+            context.user_data['conversation_history'] = context.user_data['conversation_history'][-10:]
+
         await update.message.reply_text(response)
     except Exception as e:
         await update.message.reply_text(
-            f"Sorry, I had trouble with that. Error: {str(e)}\n\n"
+            f"My sincerest apologies, Master... I encountered an error: {str(e)}\n\n"
             "Try using commands like:\n"
             "/projects - List projects\n"
             "/status <project> - Get status\n"

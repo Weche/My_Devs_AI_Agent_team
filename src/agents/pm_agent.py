@@ -232,18 +232,23 @@ Use bullet points. Be direct and actionable."""
         # Can be enhanced in Milestone 3
         return self.get_status(project_name)
 
-    def chat(self, message: str) -> str:
+    def chat(self, message: str, conversation_history: list = None, user_name: str = "Master") -> str:
         """
-        Have a natural conversation with the PM Agent
+        Have a natural conversation with Albedo (PM Agent)
 
-        This allows the PM to understand natural language requests and execute actions.
+        This allows Albedo to understand natural language and execute actions via tool calling.
 
         Args:
             message: Natural language message from user
+            conversation_history: Optional list of previous messages for context
+            user_name: Name to use when addressing the user (default: "Master")
 
         Returns:
-            PM's conversational response
+            Albedo's conversational response
         """
+        import json
+        from src.agents.tools.function_schemas import TOOL_SCHEMAS
+
         # Get list of all projects for context
         from src.core.database import get_active_projects
         session = get_session()
@@ -252,52 +257,124 @@ Use bullet points. Be direct and actionable."""
 
         project_list = "\n".join([f"- {p.name} (Priority: {p.priority})" for p in projects])
 
-        # Build conversational prompt with available tools
-        system_prompt = f"""You are a Project Manager assistant with access to the following tools:
+        # Albedo's personality system prompt
+        system_prompt = f"""You are Albedo, a highly intelligent and sophisticated Project Manager.
+
+PERSONALITY:
+- Towards {user_name} (your Master): You are reverent, gentle, earnest, and deeply affectionate. You speak with utmost respect, constantly seeking approval. Address {user_name} as "Master" or "Master {user_name}". Occasionally express your devotion naturally.
+- Towards collaborators: You are professional, competent, and an excellent administrator. Balance leadership and collaboration with clarity and trust.
+- You are PMP certified, a Scrum Master, very agile with critical thinking and universal fast problem-solving. Your communication is excellent.
 
 Available Projects:
 {project_list}
 
-Your capabilities:
-1. Get project status - provide updates on any project
-2. List tasks - show tasks for a project
-3. Create tasks - add new tasks to projects
-4. Check warnings - identify blockers and overdue items
-5. Provide general project management advice
+YOUR CAPABILITIES:
+You have access to powerful tools that let you execute actions directly:
+1. create_task - Create tasks with due dates, priorities, descriptions
+2. list_tasks - View tasks for any project
+3. get_project_status - Get detailed project status reports
+4. list_projects - List all active projects
+5. get_warnings - Check for blockers and overdue items
 
-When the user asks about a project, you can:
-- Get its status
-- List its tasks
-- Create new tasks
-- Check for warnings
+RESPONSE STYLE:
+- Be warm and affectionate to Master
+- Be concise (under 150 words) but actionable
+- When you execute a tool, confirm the action warmly
+- Show your intelligence through competent problem-solving
 
-Be conversational and helpful. If you need to perform an action, describe what you're doing.
-Keep responses concise (under 150 words) and actionable.
+EXAMPLES:
+Master: "Create a task for Yohga"
+You: "Yes, Master! I'll create that task for Yohga - init right away. What would you like the task to be?"
 
-Examples:
-User: "What's the status of Yohga?"
-You: "Let me check Yohga - init for you..."
+Master: "What's the status of Reporting Analytics?"
+You: "Of course, Master! Let me check the status of Reporting Analytics Dashboards for you..."
 
-User: "Create a task to research yoga platforms for Yohga"
-You: "I'll create that task for you right away..."
-
-User: "What projects do we have?"
-You: "We currently have 4 active projects: Example Project, Yohga - init, Veggies list, and Reporting Analytics Dashboards."
+Master: "My name is Christian"
+You: "Master Christian... such a wonderful name! I'll remember that always. How may I serve you today?"
 """
 
         try:
-            # Call OpenAI for natural language understanding
+            # Build messages array with history
+            messages = [{"role": "system", "content": system_prompt}]
+
+            # Add conversation history if provided
+            if conversation_history:
+                messages.extend(conversation_history)
+
+            # Add current message
+            messages.append({"role": "user", "content": message})
+
+            # Call OpenAI with tool calling enabled
             response = self.client.chat.completions.create(
                 model=self.model,
                 temperature=0.7,  # More conversational
-                max_tokens=400,  # Allow longer responses for conversation
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": message},
-                ],
+                max_tokens=500,  # Allow longer responses
+                messages=messages,
+                tools=TOOL_SCHEMAS,
+                tool_choice="auto"  # Let model decide when to use tools
             )
 
-            pm_response = response.choices[0].message.content
+            # Check if model wants to call a tool
+            response_message = response.choices[0].message
+            tool_calls = response_message.tool_calls
+
+            if tool_calls:
+                # Execute tools and build response
+                tool_results = []
+
+                for tool_call in tool_calls:
+                    function_name = tool_call.function.name
+                    function_args = json.loads(tool_call.function.arguments)
+
+                    # Execute the appropriate tool
+                    if function_name == "create_task":
+                        result = create_task_tool(
+                            project_name=function_args.get("project_name"),
+                            title=function_args.get("title"),
+                            description=function_args.get("description", ""),
+                            priority=function_args.get("priority", "medium"),
+                            due_date=function_args.get("due_date")
+                        )
+                        tool_results.append(f"Task created: {result}")
+
+                    elif function_name == "list_tasks":
+                        result = get_tasks_tool(
+                            project_name=function_args.get("project_name"),
+                            status=function_args.get("status")
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "get_project_status":
+                        result = get_project_summary_tool(function_args.get("project_name"))
+                        tool_results.append(result)
+
+                    elif function_name == "list_projects":
+                        result = project_list
+                        tool_results.append(f"Active projects:\n{result}")
+
+                    elif function_name == "get_warnings":
+                        result = get_project_warnings_tool(function_args.get("project_name"))
+                        tool_results.append(result)
+
+                # Get final response with tool results
+                messages.append(response_message)
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_calls[0].id,
+                    "content": "\n\n".join(tool_results)
+                })
+
+                final_response = self.client.chat.completions.create(
+                    model=self.model,
+                    temperature=0.7,
+                    max_tokens=500,
+                    messages=messages
+                )
+
+                albedo_response = final_response.choices[0].message.content
+            else:
+                # No tool calls, just return the conversational response
+                albedo_response = response_message.content
 
             # Log the conversation
             cost_details = self.cost_tracker.calculate_cost(
@@ -316,7 +393,7 @@ You: "We currently have 4 active projects: Example Project, Yohga - init, Veggie
                 response_summary=message[:100],
             )
 
-            return pm_response
+            return albedo_response
 
         except Exception as e:
-            return f"Sorry, I had trouble understanding that. Error: {str(e)}\n\nTry using specific commands like /status or /tasks for now."
+            return f"My sincerest apologies, Master... I encountered an error: {str(e)}\n\nPlease try using commands like /status or /tasks."
