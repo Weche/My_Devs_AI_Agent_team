@@ -94,6 +94,7 @@ def main():
             logger.info("Daily standup: 9:00 AM Santiago time")
             logger.info("Weekly review: Mondays 9:00 AM Santiago time")
             logger.info("Due task reminders: Every hour")
+            logger.info("GitHub updates: Every 30 minutes")
 
     application.post_init = post_init
 

@@ -12,6 +12,7 @@ from telegram.ext import ContextTypes
 
 from src.agents.pm_agent import PMAgent
 from src.core.database import get_session, get_active_projects, get_tasks_by_project
+from src.core.github_tracker import GitHubTracker
 
 load_dotenv()
 
@@ -57,6 +58,15 @@ class AlbedoScheduler:
             CronTrigger(day_of_week="mon", hour=9, minute=0, timezone="America/Santiago"),
             id="weekly_review",
             name="Weekly Project Review",
+            replace_existing=True
+        )
+
+        # Check GitHub repos for updates every 30 minutes
+        self.scheduler.add_job(
+            self.check_github_updates,
+            CronTrigger(minute="*/30", timezone="America/Santiago"),
+            id="github_updates",
+            name="Check GitHub Updates",
             replace_existing=True
         )
 
@@ -192,6 +202,35 @@ class AlbedoScheduler:
 
         except Exception as e:
             print(f"Error in weekly review: {str(e)}")
+
+    async def check_github_updates(self):
+        """Check all GitHub repos for new commits and notify user"""
+        try:
+            tracker = GitHubTracker()
+            repos = tracker.get_all_repos()
+
+            for repo in repos:
+                update = tracker.check_updates(repo)
+
+                # If new commits detected
+                if update and "error" not in update:
+                    message = tracker.format_update_message(update)
+                    await self.bot.send_message(
+                        chat_id=self.authorized_user_id,
+                        text=message
+                    )
+
+                    # If commit mentions task IDs, notify about them
+                    if update.get("task_ids"):
+                        task_info = f"\n\n💡 This commit mentions tasks: {', '.join(['#' + tid for tid in update['task_ids']])}"
+                        await self.bot.send_message(
+                            chat_id=self.authorized_user_id,
+                            text=task_info
+                        )
+
+        except Exception as e:
+            # Log error but don't crash scheduler
+            print(f"Error checking GitHub updates: {str(e)}")
 
 
 def setup_scheduler(bot: Bot, authorized_user_id: int) -> AlbedoScheduler:
