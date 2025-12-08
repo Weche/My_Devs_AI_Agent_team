@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from typing import Optional, List
-from crewai_tools import tool
 from sqlalchemy.orm import Session
 
 from src.core.database import (
@@ -13,7 +12,6 @@ from src.core.database import (
 )
 
 
-@tool("Create Task")
 def create_task_tool(
     project_name: str,
     title: str,
@@ -78,7 +76,6 @@ def create_task_tool(
         session.close()
 
 
-@tool("Update Task Status")
 def update_task_status_tool(task_id: int, new_status: str) -> str:
     """
     Update the status of a task.
@@ -115,7 +112,6 @@ def update_task_status_tool(task_id: int, new_status: str) -> str:
         session.close()
 
 
-@tool("Get Tasks")
 def get_tasks_tool(
     project_name: str,
     status: Optional[str] = None,
@@ -159,7 +155,6 @@ def get_tasks_tool(
         session.close()
 
 
-@tool("Get Task Details")
 def get_task_details_tool(task_id: int) -> str:
     """
     Get detailed information about a specific task.
@@ -194,7 +189,6 @@ def get_task_details_tool(task_id: int) -> str:
         session.close()
 
 
-@tool("Assign Task")
 def assign_task_tool(task_id: int, agent_name: str) -> str:
     """
     Assign a task to an agent.

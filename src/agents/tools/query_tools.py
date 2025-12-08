@@ -2,7 +2,6 @@
 
 from datetime import datetime, timedelta
 from typing import Optional
-from crewai_tools import tool
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -15,7 +14,6 @@ from src.core.database import (
 )
 
 
-@tool("Get Project Summary")
 def get_project_summary_tool(project_name: str) -> str:
     """
     Get a summary of tasks by status for a project.
@@ -63,7 +61,6 @@ def get_project_summary_tool(project_name: str) -> str:
         session.close()
 
 
-@tool("Get Project Warnings")
 def get_project_warnings_tool(project_name: str) -> str:
     """
     Get warnings for a project (overdue tasks, blocked tasks > 3 days, etc.).
@@ -147,7 +144,6 @@ def get_project_warnings_tool(project_name: str) -> str:
         session.close()
 
 
-@tool("Get All Projects")
 def get_all_projects_tool() -> str:
     """
     Get a list of all active projects.
@@ -178,7 +174,6 @@ def get_all_projects_tool() -> str:
         session.close()
 
 
-@tool("Get Blocked Tasks")
 def get_blocked_tasks_tool(project_name: str) -> str:
     """
     Get all blocked tasks for a project.
@@ -221,7 +216,6 @@ def get_blocked_tasks_tool(project_name: str) -> str:
         session.close()
 
 
-@tool("Get Overdue Tasks")
 def get_overdue_tasks_tool(project_name: str) -> str:
     """
     Get all overdue tasks for a project.

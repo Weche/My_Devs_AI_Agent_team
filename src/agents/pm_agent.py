@@ -49,9 +49,9 @@ class PMAgent(BaseAgent):
             return f"Error: Project '{project_name}' not found"
 
         # Gather context
-        summary = get_project_summary_tool._run(project_name)
-        warnings = get_project_warnings_tool._run(project_name)
-        blocked = get_blocked_tasks_tool._run(project_name)
+        summary = get_project_summary_tool(project_name)
+        warnings = get_project_warnings_tool(project_name)
+        blocked = get_blocked_tasks_tool(project_name)
 
         # Build prompt
         prompt = f"""You are a Project Manager providing a status update.
@@ -143,7 +143,7 @@ Use bullet points. Be direct and actionable."""
         Returns:
             Success or error message
         """
-        result = create_task_tool._run(
+        result = create_task_tool(
             project_name=project_name,
             title=task_title,
             description=description,
@@ -189,7 +189,7 @@ Use bullet points. Be direct and actionable."""
         Returns:
             Formatted task list
         """
-        result = get_tasks_tool._run(project_name=project_name, status=status)
+        result = get_tasks_tool(project_name=project_name, status=status)
 
         # Log interaction
         self.context_manager.save_interaction(
@@ -215,7 +215,7 @@ Use bullet points. Be direct and actionable."""
         Returns:
             Warnings text
         """
-        return get_project_warnings_tool._run(project_name)
+        return get_project_warnings_tool(project_name)
 
     def generate_report(self, project_name: str, report_type: str = "daily") -> str:
         """
