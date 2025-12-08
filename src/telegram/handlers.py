@@ -336,3 +336,26 @@ async def costs_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await update.message.reply_text(f"Error: {str(e)}")
+
+
+async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle natural language messages (non-commands)"""
+    if not is_authorized(update, context):
+        await update.message.reply_text("Unauthorized")
+        return
+
+    user_message = update.message.text
+    await update.message.chat.send_action("typing")
+
+    try:
+        pm_agent = PMAgent()
+        response = pm_agent.chat(user_message)
+        await update.message.reply_text(response)
+    except Exception as e:
+        await update.message.reply_text(
+            f"Sorry, I had trouble with that. Error: {str(e)}\n\n"
+            "Try using commands like:\n"
+            "/projects - List projects\n"
+            "/status <project> - Get status\n"
+            "/help - Show all commands"
+        )

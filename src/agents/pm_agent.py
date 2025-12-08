@@ -231,3 +231,92 @@ Use bullet points. Be direct and actionable."""
         # For Milestone 1, use simple status
         # Can be enhanced in Milestone 3
         return self.get_status(project_name)
+
+    def chat(self, message: str) -> str:
+        """
+        Have a natural conversation with the PM Agent
+
+        This allows the PM to understand natural language requests and execute actions.
+
+        Args:
+            message: Natural language message from user
+
+        Returns:
+            PM's conversational response
+        """
+        # Get list of all projects for context
+        from src.core.database import get_active_projects
+        session = get_session()
+        projects = get_active_projects(session)
+        session.close()
+
+        project_list = "\n".join([f"- {p.name} (Priority: {p.priority})" for p in projects])
+
+        # Build conversational prompt with available tools
+        system_prompt = f"""You are a Project Manager assistant with access to the following tools:
+
+Available Projects:
+{project_list}
+
+Your capabilities:
+1. Get project status - provide updates on any project
+2. List tasks - show tasks for a project
+3. Create tasks - add new tasks to projects
+4. Check warnings - identify blockers and overdue items
+5. Provide general project management advice
+
+When the user asks about a project, you can:
+- Get its status
+- List its tasks
+- Create new tasks
+- Check for warnings
+
+Be conversational and helpful. If you need to perform an action, describe what you're doing.
+Keep responses concise (under 150 words) and actionable.
+
+Examples:
+User: "What's the status of Yohga?"
+You: "Let me check Yohga - init for you..."
+
+User: "Create a task to research yoga platforms for Yohga"
+You: "I'll create that task for you right away..."
+
+User: "What projects do we have?"
+You: "We currently have 4 active projects: Example Project, Yohga - init, Veggies list, and Reporting Analytics Dashboards."
+"""
+
+        try:
+            # Call OpenAI for natural language understanding
+            response = self.client.chat.completions.create(
+                model=self.model,
+                temperature=0.7,  # More conversational
+                max_tokens=400,  # Allow longer responses for conversation
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": message},
+                ],
+            )
+
+            pm_response = response.choices[0].message.content
+
+            # Log the conversation
+            cost_details = self.cost_tracker.calculate_cost(
+                response.usage.prompt_tokens,
+                response.usage.completion_tokens,
+                self.model,
+            )
+
+            self.cost_tracker.log_api_call(
+                agent=self.agent_name,
+                project="conversation",
+                model=self.model,
+                tokens_input=response.usage.prompt_tokens,
+                tokens_output=response.usage.completion_tokens,
+                command="chat",
+                response_summary=message[:100],
+            )
+
+            return pm_response
+
+        except Exception as e:
+            return f"Sorry, I had trouble understanding that. Error: {str(e)}\n\nTry using specific commands like /status or /tasks for now."
