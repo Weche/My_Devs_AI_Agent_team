@@ -7,6 +7,7 @@ from rich.table import Table
 from datetime import datetime
 
 from src.agents.pm_agent import PMAgent
+from src.agents.lead_dev_agent import LeadDevAgent
 from src.core.cost_tracker import CostTracker
 from src.core.database import get_session, get_project_by_name, get_tasks_by_project
 
@@ -192,6 +193,63 @@ def projects():
     console.print(table)
     console.print()
     session.close()
+
+
+@cli.command()
+@click.argument("project_name")
+@click.argument("question")
+def ask_dev(project_name, question):
+    """Ask Lead Dev for technical advice"""
+    console.print(f"\n[bold cyan]Asking Lead Dev about {project_name}[/bold cyan]\n")
+
+    lead_dev = LeadDevAgent()
+    result = lead_dev.get_technical_advice(project_name, question)
+
+    console.print(result)
+    console.print()
+
+
+@cli.command()
+@click.argument("project_name")
+@click.argument("decision")
+@click.argument("reasoning")
+def track_decision(project_name, decision, reasoning):
+    """Track a technical decision"""
+    console.print(f"\n[bold cyan]Tracking technical decision for {project_name}[/bold cyan]\n")
+
+    lead_dev = LeadDevAgent()
+    result = lead_dev.track_decision(project_name, decision, reasoning)
+
+    console.print(result)
+    console.print()
+
+
+@cli.command()
+@click.argument("project_name")
+@click.argument("requirement")
+def review_arch(project_name, requirement):
+    """Get architecture review for a requirement"""
+    console.print(f"\n[bold cyan]Reviewing architecture for {project_name}[/bold cyan]\n")
+
+    lead_dev = LeadDevAgent()
+    result = lead_dev.review_architecture(project_name, requirement)
+
+    console.print(result)
+    console.print()
+
+
+@cli.command()
+@click.argument("project_name")
+@click.option("--days", "-d", default=30, help="Number of days to summarize")
+def dev_context(project_name, days):
+    """View Lead Dev's context summary for a project"""
+    console.print(f"\n[bold cyan]Lead Dev Context for {project_name}[/bold cyan]\n")
+
+    lead_dev = LeadDevAgent()
+    result = lead_dev.get_context_summary(project_name, days)
+
+    console.print(result)
+    console.print()
 
 
 @cli.command()
