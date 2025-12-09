@@ -27,6 +27,7 @@ from src.telegram.handlers import (
     warnings_handler,
     projects_handler,
     costs_handler,
+    execute_handler,
     message_handler,
 )
 from src.telegram.scheduler import setup_scheduler
@@ -80,6 +81,7 @@ def main():
     application.add_handler(CommandHandler("warnings", warnings_handler))
     application.add_handler(CommandHandler("projects", projects_handler))
     application.add_handler(CommandHandler("costs", costs_handler))
+    application.add_handler(CommandHandler("execute", execute_handler))
 
     # Register message handler for natural language (must be last)
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))

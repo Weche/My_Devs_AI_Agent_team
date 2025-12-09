@@ -58,6 +58,7 @@ Project Management:
 /tasks <project> - List all tasks
 /create <project> <title> - Create new task
 /warnings <project> - Show warnings
+/execute <task_id> - Assign task to Dev Agent
 
 Cost Tracking:
 /costs - View today's API costs
@@ -398,3 +399,75 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/status <project> - Get status\n"
             "/help - Show all commands"
         )
+
+
+async def execute_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /execute command - Assign task to Dev Agent"""
+    if not is_authorized(update, context):
+        await update.message.reply_text("Unauthorized")
+        return
+
+    if not context.args or len(context.args) == 0:
+        await update.message.reply_text(
+            "Usage: /execute <task_id>\n\n"
+            "Example: /execute 9\n\n"
+            "This command assigns a task to the Dev Agent for code execution."
+        )
+        return
+
+    try:
+        task_id = int(context.args[0])
+    except ValueError:
+        await update.message.reply_text("Error: Task ID must be a number")
+        return
+
+    await update.message.reply_text(f"🤖 Assigning Task #{task_id} to Dev Agent...\n\nThis may take a few minutes.")
+
+    try:
+        import requests
+
+        # Call Dev Agent Service
+        dev_agent_url = "http://localhost:3001/execute-task"
+
+        response = requests.post(
+            dev_agent_url,
+            json={"task_id": task_id},
+            timeout=300  # 5 minute timeout
+        )
+
+        result = response.json()
+
+        if result.get("success"):
+            message_lines = [
+                f"✅ Dev Agent completed Task #{task_id}!\n",
+                result.get("message", "Task executed successfully"),
+            ]
+
+            files_created = result.get("files_created", [])
+            if files_created:
+                message_lines.append(f"\n📁 Files created:")
+                for file in files_created:
+                    message_lines.append(f"  • {file}")
+
+            await update.message.reply_text("\n".join(message_lines))
+        else:
+            error_msg = result.get("error", "Unknown error")
+            await update.message.reply_text(
+                f"❌ Dev Agent failed to execute Task #{task_id}\n\n"
+                f"Error: {error_msg}"
+            )
+
+    except requests.exceptions.ConnectionError:
+        await update.message.reply_text(
+            "⚠️ Cannot connect to Dev Agent Service\n\n"
+            "Please ensure the service is running:\n"
+            "cd dev-agent-service\n"
+            "npm run dev"
+        )
+    except requests.exceptions.Timeout:
+        await update.message.reply_text(
+            f"⏱ Task #{task_id} is taking longer than expected\n\n"
+            "Dev Agent is still working on it. Check status later with /tasks"
+        )
+    except Exception as e:
+        await update.message.reply_text(f"Error: {str(e)}")
