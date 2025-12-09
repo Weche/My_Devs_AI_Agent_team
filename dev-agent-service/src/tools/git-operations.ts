@@ -17,7 +17,10 @@ export type GitCommitParams = z.infer<typeof gitCommitSchema>;
 export async function gitCommitAction(params: GitCommitParams): Promise<string> {
   const { message, files, push } = params;
 
-  const workspaceDir = process.env.WORKSPACE_DIR || join(process.cwd(), '../workspace');
+  // Use project-specific workspace if set, otherwise fall back to shared workspace
+  const baseWorkspace = process.env.WORKSPACE_DIR || join(process.cwd(), '..');
+  const projectWorkspace = process.env.PROJECT_WORKSPACE || 'workspace';
+  const workspaceDir = join(baseWorkspace, projectWorkspace);
   const git: SimpleGit = simpleGit(workspaceDir);
 
   try {
@@ -33,7 +36,8 @@ export async function gitCommitAction(params: GitCommitParams): Promise<string> 
       const githubUser = process.env.GITHUB_USER;
       const githubToken = process.env.GITHUB_TOKEN;
       if (githubUser && githubToken) {
-        const repoName = workspaceDir.split('/').pop() || 'code';
+        // Extract project name from workspace path (e.g., "workspaces/reporting-analytics-dashboards" -> "reporting-analytics-dashboards")
+        const repoName = process.env.PROJECT_WORKSPACE?.split('/').pop() || workspaceDir.split(/[/\\]/).pop() || 'code';
         await git.addRemote(
           'origin',
           `https://${githubToken}@github.com/${githubUser}/${repoName}.git`

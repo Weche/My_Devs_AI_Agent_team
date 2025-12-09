@@ -16,13 +16,14 @@ export class DevAgent {
   constructor() {
     // Use Anthropic Claude for dev agent (best for code generation)
     // Fallback to OpenAI if not configured
-    const provider = process.env.ANTHROPIC_API_KEY ? 'anthropic' : 'openai';
+    const useAnthropic = process.env.USE_ANTHROPIC === 'true' && process.env.ANTHROPIC_API_KEY;
+    const provider = useAnthropic ? 'anthropic' : 'openai';
 
     this.model = provider === 'anthropic'
-      ? anthropic('claude-3-5-sonnet-20241022') // Claude Sonnet 3.5
-      : openai('gpt-4-turbo'); // GPT-4 Turbo
+      ? anthropic('claude-3-5-sonnet-20240620') // Claude Sonnet 3.5
+      : openai('gpt-4o'); // GPT-4o (latest)
 
-    console.log(`Dev Agent initialized with ${provider === 'anthropic' ? 'Claude Sonnet 3.5' : 'GPT-4 Turbo'}`);
+    console.log(`Dev Agent initialized with ${provider === 'anthropic' ? 'Claude Sonnet 3.5' : 'GPT-4o'}`);
   }
 
   async executeTask(taskId: number) {
@@ -39,6 +40,12 @@ export class DevAgent {
     console.log(`\n🤖 Dev Agent executing Task #${taskId}: ${task.title}`);
     console.log(`   Project: ${task.project_name}`);
     console.log(`   Description: ${task.description || 'No description'}`);
+
+    // Set project-specific workspace directory
+    const projectSlug = task.project_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const projectWorkspace = `workspaces/${projectSlug}`;
+    process.env.PROJECT_WORKSPACE = projectWorkspace;
+    console.log(`   Workspace: ${projectWorkspace}`);
 
     // Update task to in_progress
     await updateTaskAction({ task_id: taskId, status: 'in_progress', progress_note: 'Dev Agent started' });

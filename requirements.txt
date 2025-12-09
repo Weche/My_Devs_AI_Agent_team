@@ -26,3 +26,5 @@ PyGithub>=2.8.0
 
 # Proactive updates (scheduling)
 APScheduler>=3.10.0
+
+requests

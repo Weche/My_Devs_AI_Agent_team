@@ -17,7 +17,10 @@ export type WriteFileParams = z.infer<typeof writeFileSchema>;
 export async function writeFileAction(params: WriteFileParams): Promise<string> {
   const { path, content, description } = params;
 
-  const workspaceDir = process.env.WORKSPACE_DIR || join(process.cwd(), '../workspace');
+  // Use project-specific workspace if set, otherwise fall back to shared workspace
+  const baseWorkspace = process.env.WORKSPACE_DIR || join(process.cwd(), '..');
+  const projectWorkspace = process.env.PROJECT_WORKSPACE || 'workspace';
+  const workspaceDir = join(baseWorkspace, projectWorkspace);
   const fullPath = join(workspaceDir, path);
 
   try {
