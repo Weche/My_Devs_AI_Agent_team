@@ -481,5 +481,70 @@ TOOL_SCHEMAS = [
                 "required": ["task_ids"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_new_agent",
+            "description": "Request Master's approval to create a new specialized agent. Use this when you identify recurring task patterns that need specialized expertise (e.g., Testing, DevOps, Security, Mobile). Always request approval first.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "agent_name": {
+                        "type": "string",
+                        "description": "Name of the agent (e.g., 'Testing Agent', 'DevOps Agent')"
+                    },
+                    "specialty": {
+                        "type": "string",
+                        "description": "Agent specialty (e.g., 'testing', 'devops', 'security', 'mobile')"
+                    },
+                    "port": {
+                        "type": "integer",
+                        "description": "Port number for the agent (3004-3010)",
+                        "minimum": 3004,
+                        "maximum": 3010
+                    },
+                    "keywords": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of keywords for auto-detection (e.g., ['test', 'pytest', 'unittest'])"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Description of agent's expertise"
+                    }
+                },
+                "required": ["agent_name", "specialty", "port", "keywords", "description"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "suggest_new_agent",
+            "description": "Suggest creating a new agent based on recurring task patterns. Use this when you notice the team needs specialized expertise.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "task_pattern": {
+                        "type": "string",
+                        "description": "Description of recurring task type (e.g., 'testing tasks', 'devops deployment')"
+                    }
+                },
+                "required": ["task_pattern"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_all_agents",
+            "description": "List all registered agents (Frontend, Backend, Database, and any dynamically created agents) with their capabilities.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
     }
 ]

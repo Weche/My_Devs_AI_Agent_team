@@ -1,0 +1,12 @@
+{
+  "name": "dev-agents-orchestrator",
+  "version": "1.0.0",
+  "description": "Orchestrator for all Dev Agents",
+  "type": "module",
+  "scripts": {
+    "start": "node orchestrator.js"
+  },
+  "keywords": ["agents", "orchestrator"],
+  "author": "Christian Orquera",
+  "license": "MIT"
+}

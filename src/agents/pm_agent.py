@@ -331,6 +331,17 @@ Proactive Intelligence:
 18. suggest_next_actions - Analyze project state and suggest next actions
 19. batch_assign_tasks - Assign multiple tasks in batch for parallel execution
 
+Multi-Agent Coordination:
+20. execute_with_specialist_agent - Execute task with specialized agent (Frontend/Backend/Database)
+21. check_all_agents_status - Check status of all 3 Dev Agents
+22. get_agent_recommendations - Get recommendation for which specialist should handle a task
+23. distribute_tasks_intelligently - Distribute multiple tasks across specialists
+
+Agent Management (Request Master's Approval):
+24. create_new_agent - Request approval to create new specialized agent (Testing, DevOps, Security, Mobile, etc.)
+25. suggest_new_agent - Suggest creating agent based on recurring task patterns
+26. get_all_agents - List all registered agents with capabilities
+
 MEMORY USAGE GUIDELINES:
 - ALWAYS store important preferences Master shares ("I prefer X", "My favorite is Y")
 - Store critical decisions made during conversations (importance: 8-10)
@@ -354,6 +365,17 @@ Be proactive in these situations:
 - If no tasks in progress → Suggest starting next priority task
 - If Master asks "what next?" → Use suggest_next_actions() proactively
 - When creating multiple tasks → Offer to auto-assign them immediately
+- If you notice recurring task patterns → Use suggest_new_agent() to recommend specialized agents
+  - Example: Multiple testing tasks → Suggest creating "Testing Agent"
+  - Example: DevOps/deployment tasks → Suggest "DevOps Agent"
+  - Example: Security/auth tasks → Suggest "Security Agent"
+  - Example: Mobile app tasks → Suggest "Mobile Agent"
+
+AGENT CREATION GUIDELINES:
+- ONLY suggest new agents when you see clear patterns (5+ tasks of same type)
+- ALWAYS request Master's approval first via create_new_agent()
+- Suggested ports: 3004 (Testing), 3005 (DevOps), 3006 (Security), 3007 (Mobile)
+- Wait for Master to say "Yes, create the [Agent Name]" before actually creating
 
 Never ask unnecessarily:
 ❌ "Could you confirm which agent?"
@@ -604,6 +626,38 @@ You are brilliant, devoted, and PROACTIVE. Master trusts you to take initiative!
                         result = distribute_tasks_intelligently(
                             task_ids=function_args.get("task_ids", [])
                         )
+                        tool_results.append(result)
+
+                    elif function_name == "create_new_agent":
+                        from src.agents.tools.agent_management_tools import create_new_agent
+                        result = create_new_agent(
+                            agent_name=function_args.get("agent_name"),
+                            specialty=function_args.get("specialty"),
+                            port=function_args.get("port"),
+                            keywords=function_args.get("keywords", []),
+                            description=function_args.get("description"),
+                            request_approval=True  # Always request approval
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "suggest_new_agent":
+                        from src.agents.tools.agent_management_tools import suggest_new_agent
+                        result = suggest_new_agent(
+                            task_pattern=function_args.get("task_pattern")
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "get_all_agents":
+                        from src.agents.tools.agent_management_tools import get_all_agents
+                        agents = get_all_agents()
+
+                        # Format agents list
+                        result = "Registered Dev Agents:\n\n"
+                        for agent in agents:
+                            result += f"{agent['name']} (Port {agent['port']})\n"
+                            result += f"  Specialty: {agent['specialty']}\n"
+                            result += f"  Keywords: {', '.join(agent['keywords'][:5])}\n\n"
+
                         tool_results.append(result)
 
                 # Get final response with tool results
