@@ -230,5 +230,46 @@ TOOL_SCHEMAS = [
                 "required": ["repo_name"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "execute_task_with_dev_agent",
+            "description": "Assign a task to the Dev Agent for autonomous code execution. Dev Agent will write code, commit to git, and update task status. Use this for any task that requires writing code.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "task_id": {
+                        "type": "integer",
+                        "description": "The ID of the task to execute"
+                    }
+                },
+                "required": ["task_id"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "check_dev_agent_status",
+            "description": "Check if the Dev Agent service is online and ready to execute tasks",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "list_available_agents",
+            "description": "List all available agents (Dev Agent, Lead Dev Agent) and their capabilities",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
     }
 ]
