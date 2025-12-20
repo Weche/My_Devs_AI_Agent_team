@@ -4,12 +4,14 @@ from typing import Optional
 from src.core.database import get_session, get_task_by_id, get_active_projects
 from src.agents.tools.task_tools import get_tasks_tool
 from src.agents.tools.query_tools import get_project_warnings_tool
-from src.agents.tools.dev_agent_tools import execute_task_with_dev_agent
+from src.agents.tools.multi_agent_tools import execute_with_specialist_agent
 
 
 def auto_assign_task(task_id: int) -> str:
     """
-    Intelligently assign a task to the appropriate agent based on task content.
+    Intelligently assign a task to the appropriate specialist agent based on task content.
+
+    Uses multi-agent system with Frontend, Backend, and Database specialists.
 
     Args:
         task_id: Task ID to assign
@@ -28,35 +30,21 @@ def auto_assign_task(task_id: int) -> str:
     description_lower = (task.description or "").lower()
     combined = f"{title_lower} {description_lower}"
 
-    # Code implementation keywords → Dev Agent
-    code_keywords = [
-        'implement', 'build', 'code', 'write', 'create',
-        'api', 'database', 'frontend', 'backend', 'server',
-        'html', 'css', 'javascript', 'python', 'sql',
-        'dashboard', 'interface', 'endpoint', 'function'
-    ]
-
-    # Architecture/review keywords → Lead Dev Agent (Claude)
+    # Architecture/review keywords → Lead Dev Agent (Claude/Human)
     architecture_keywords = [
-        'review', 'architecture', 'design', 'plan',
-        'refactor', 'optimize', 'analyze', 'evaluate'
+        'review code', 'architecture', 'design plan', 'evaluate architecture',
+        'refactor strategy', 'code review', 'technical design'
     ]
 
-    # Check for code-related task
-    if any(kw in combined for kw in code_keywords):
-        result = execute_task_with_dev_agent(task_id)
-        return f"🎯 Auto-assigned Task #{task_id} to Dev Agent (code execution)\n\n{result}"
-
-    # Check for architecture/review task
-    elif any(kw in combined for kw in architecture_keywords):
+    # Check if it needs architectural review
+    if any(kw in combined for kw in architecture_keywords):
         return f"🎯 Task #{task_id} requires Lead Dev Agent (architecture/review)\n" \
                f"Task: {task.title}\n" \
                f"This task needs human expertise for architectural decisions."
 
-    # Default to Dev Agent for general tasks
-    else:
-        result = execute_task_with_dev_agent(task_id)
-        return f"🎯 Auto-assigned Task #{task_id} to Dev Agent (default)\n\n{result}"
+    # Otherwise, use specialist agent (auto-detects frontend/backend/database)
+    result = execute_with_specialist_agent(task_id)
+    return result
 
 
 def suggest_next_actions(project_name: Optional[str] = None) -> str:

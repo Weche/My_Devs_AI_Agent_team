@@ -1,0 +1,28 @@
+{
+  "name": "frontend-dev-agent",
+  "version": "1.0.0",
+  "description": "Frontend Specialist Dev Agent - HTML/CSS/JS/React expert using StreamUI",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^1.0.5",
+    "@ai-sdk/openai": "^1.0.8",
+    "ai": "^4.0.57",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "simple-git": "^3.28.0",
+    "sqlite3": "^5.1.7",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
