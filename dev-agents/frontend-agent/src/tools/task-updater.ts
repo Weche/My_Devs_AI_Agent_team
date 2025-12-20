@@ -5,6 +5,7 @@
 import sqlite3 from 'sqlite3';
 import { join } from 'path';
 import { z } from 'zod';
+import sharedEnv from '../../../shared-env.js';
 
 export const updateTaskSchema = z.object({
   task_id: z.number().describe('Task ID to update'),
@@ -35,7 +36,7 @@ function getQuery(db: sqlite3.Database, query: string, params: any[]): Promise<a
 export async function updateTaskAction(params: UpdateTaskParams): Promise<string> {
   const { task_id, status, progress_note } = params;
 
-  const dbPath = process.env.DATABASE_PATH || join(process.cwd(), '../../data/database/pm_system.db');
+  const dbPath = sharedEnv.DATABASE_PATH;
 
   return new Promise((resolve, reject) => {
     const db = new sqlite3.Database(dbPath, async (err) => {

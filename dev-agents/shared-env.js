@@ -37,11 +37,19 @@ if (process.env.GITHUB_TOKEN) {
   console.log(`   GitHub Token: ${process.env.GITHUB_TOKEN?.substring(0, 15)}...`);
 }
 
+// Construct absolute paths for database and workspace
+const rootDir = join(__dirname, '..');
+const DATABASE_PATH = join(rootDir, 'data', 'database', 'pm_system.db');
+const WORKSPACE_DIR = join(rootDir, 'workspaces');
+
+console.log(`   Database Path: ${DATABASE_PATH}`);
+console.log(`   Workspace Dir: ${WORKSPACE_DIR}`);
+
 export default {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
   GITHUB_TOKEN: process.env.GITHUB_TOKEN,
   GITHUB_USER: process.env.GITHUB_USER,
-  DATABASE_PATH: process.env.DATABASE_PATH || join(__dirname, '..', 'data', 'database', 'pm_system.db'),
-  WORKSPACE_DIR: process.env.WORKSPACE_DIR || join(__dirname, '..', 'workspaces'),
+  DATABASE_PATH,
+  WORKSPACE_DIR,
 };
