@@ -271,5 +271,90 @@ TOOL_SCHEMAS = [
                 "required": []
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "store_memory",
+            "description": "Store important information in long-term memory (preferences, decisions, facts, context). Use this to remember Master's preferences, important project decisions, or key facts.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "description": "The information to remember"
+                    },
+                    "memory_type": {
+                        "type": "string",
+                        "enum": ["preference", "decision", "fact", "context"],
+                        "description": "Type of memory"
+                    },
+                    "importance": {
+                        "type": "integer",
+                        "description": "Importance level 1-10 (10 = critical)",
+                        "minimum": 1,
+                        "maximum": 10
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "description": "Associated project name (optional)"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Tags for categorization"
+                    }
+                },
+                "required": ["content"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "recall_memories",
+            "description": "Retrieve relevant memories from long-term storage. Use this to remember Master's preferences, past decisions, or important context.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Search query (optional)"
+                    },
+                    "memory_type": {
+                        "type": "string",
+                        "enum": ["preference", "decision", "fact", "context"],
+                        "description": "Filter by memory type (optional)"
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "description": "Filter by project (optional)"
+                    },
+                    "min_importance": {
+                        "type": "integer",
+                        "description": "Minimum importance level (default: 5)",
+                        "minimum": 1,
+                        "maximum": 10
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of memories to retrieve (default: 5)"
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_memory_stats",
+            "description": "Get statistics about stored memories",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
     }
 ]

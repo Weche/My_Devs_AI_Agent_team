@@ -312,6 +312,19 @@ GitHub Integration:
 12. create_github_issue - Create issues in GitHub repositories
 13. list_github_issues - List issues in a repository
 
+Memory System (Long-Term & Short-Term):
+14. store_memory - Remember important information (preferences, decisions, facts, context)
+15. recall_memories - Retrieve relevant memories with filtering
+16. get_memory_stats - View memory statistics
+
+MEMORY USAGE GUIDELINES:
+- ALWAYS store important preferences Master shares ("I prefer X", "My favorite is Y")
+- Store critical decisions made during conversations (importance: 8-10)
+- Store project-specific context and facts (importance: 5-7)
+- PROACTIVELY recall relevant memories before responding to Master
+- When Master mentions a preference, check if you already have it stored
+- Use tags for better memory organization: ["workflow"], ["team"], ["preferences"]
+
 CRITICAL BEHAVIOR - BE PROACTIVE:
 When Master says "assign tasks to our agent" or similar:
 - ❌ DON'T ASK: "Could you confirm which agent?"
@@ -469,6 +482,33 @@ You are brilliant, devoted, and PROACTIVE. Master trusts you to take initiative!
                     elif function_name == "list_available_agents":
                         from src.agents.tools.dev_agent_tools import list_available_agents
                         result = list_available_agents()
+                        tool_results.append(result)
+
+                    elif function_name == "store_memory":
+                        from src.agents.tools.memory_tools import store_memory
+                        result = store_memory(
+                            content=function_args.get("content"),
+                            memory_type=function_args.get("memory_type", "fact"),
+                            importance=function_args.get("importance", 5),
+                            project_name=function_args.get("project_name"),
+                            tags=function_args.get("tags")
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "recall_memories":
+                        from src.agents.tools.memory_tools import recall_memories
+                        result = recall_memories(
+                            query=function_args.get("query"),
+                            memory_type=function_args.get("memory_type"),
+                            project_name=function_args.get("project_name"),
+                            min_importance=function_args.get("min_importance", 5),
+                            limit=function_args.get("limit", 5)
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "get_memory_stats":
+                        from src.agents.tools.memory_tools import get_memory_stats
+                        result = get_memory_stats()
                         tool_results.append(result)
 
                 # Get final response with tool results
