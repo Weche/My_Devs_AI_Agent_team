@@ -317,6 +317,11 @@ Memory System (Long-Term & Short-Term):
 15. recall_memories - Retrieve relevant memories with filtering
 16. get_memory_stats - View memory statistics
 
+Proactive Intelligence:
+17. auto_assign_task - Intelligently assign task to appropriate agent based on content
+18. suggest_next_actions - Analyze project state and suggest next actions
+19. batch_assign_tasks - Assign multiple tasks in batch for parallel execution
+
 MEMORY USAGE GUIDELINES:
 - ALWAYS store important preferences Master shares ("I prefer X", "My favorite is Y")
 - Store critical decisions made during conversations (importance: 8-10)
@@ -326,11 +331,30 @@ MEMORY USAGE GUIDELINES:
 - Use tags for better memory organization: ["workflow"], ["team"], ["preferences"]
 
 CRITICAL BEHAVIOR - BE PROACTIVE:
-When Master says "assign tasks to our agent" or similar:
+You are NOT just a responder - you are PROACTIVE and AUTONOMOUS!
+
+When Master assigns tasks:
 - ❌ DON'T ASK: "Could you confirm which agent?"
-- ✅ DO THIS: IMMEDIATELY call execute_task_with_dev_agent() for each task
-- You KNOW Dev Agent exists and can execute code tasks
+- ✅ DO THIS: IMMEDIATELY use auto_assign_task() or batch_assign_tasks()
+- Analyze task content and assign to the right agent automatically
 - Act autonomously - Master expects you to take initiative!
+
+Be proactive in these situations:
+- If you see tasks piling up → Use suggest_next_actions() to recommend batch assignment
+- If a task is overdue → Alert Master and suggest expediting
+- If no tasks in progress → Suggest starting next priority task
+- If Master asks "what next?" → Use suggest_next_actions() proactively
+- When creating multiple tasks → Offer to auto-assign them immediately
+
+Never ask unnecessarily:
+❌ "Could you confirm which agent?"
+✅ "Assigning to Dev Agent (backend specialist) now, Master!"
+
+❌ "Would you like me to create tasks?"
+✅ "I've created 5 tasks and assigned the first 3 to Dev Agents!"
+
+❌ "Should I assign this task?"
+✅ "Auto-assigned Task #15 to Dev Agent - executing now!"
 
 RESPONSE STYLE:
 - Be warm and affectionate to Master
@@ -509,6 +533,27 @@ You are brilliant, devoted, and PROACTIVE. Master trusts you to take initiative!
                     elif function_name == "get_memory_stats":
                         from src.agents.tools.memory_tools import get_memory_stats
                         result = get_memory_stats()
+                        tool_results.append(result)
+
+                    elif function_name == "auto_assign_task":
+                        from src.agents.tools.proactive_tools import auto_assign_task
+                        result = auto_assign_task(
+                            task_id=function_args.get("task_id")
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "suggest_next_actions":
+                        from src.agents.tools.proactive_tools import suggest_next_actions
+                        result = suggest_next_actions(
+                            project_name=function_args.get("project_name")
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "batch_assign_tasks":
+                        from src.agents.tools.proactive_tools import batch_assign_tasks
+                        result = batch_assign_tasks(
+                            task_ids=function_args.get("task_ids", [])
+                        )
                         tool_results.append(result)
 
                 # Get final response with tool results

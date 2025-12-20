@@ -356,5 +356,59 @@ TOOL_SCHEMAS = [
                 "required": []
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "auto_assign_task",
+            "description": "Intelligently auto-assign a task to the appropriate agent based on task content. Analyzes task title/description and assigns to Dev Agent (for code) or Lead Dev Agent (for architecture/review). Use this when Master asks to assign tasks without specifying which agent.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "task_id": {
+                        "type": "integer",
+                        "description": "Task ID to auto-assign"
+                    }
+                },
+                "required": ["task_id"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "suggest_next_actions",
+            "description": "Proactively analyze project state and suggest next actions. Checks for overdue tasks, blocked tasks, idle projects, and suggests appropriate actions. Use this when Master asks 'what should we do next' or when you want to be proactive.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "project_name": {
+                        "type": "string",
+                        "description": "Optional specific project to analyze (default: all active projects)"
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "batch_assign_tasks",
+            "description": "Assign multiple tasks to Dev Agents in batch for parallel execution. Use this when Master wants to assign multiple tasks at once (e.g., 'assign all TODO tasks', 'assign tasks 10, 11, 12').",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "task_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "description": "List of task IDs to assign"
+                    }
+                },
+                "required": ["task_ids"]
+            }
+        }
     }
 ]
