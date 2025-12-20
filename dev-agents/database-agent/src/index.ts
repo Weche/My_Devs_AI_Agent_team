@@ -5,14 +5,13 @@
 
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { DevAgent } from './agent.js';
 import type { ExecuteTaskRequest, ExecuteTaskResponse } from './types.js';
-
-dotenv.config();
+// Load shared environment from root .env
+import sharedEnv from '../../shared-env.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = 3003; // Database Agent port
 
 // Middleware
 app.use(cors());
