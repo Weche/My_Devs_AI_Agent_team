@@ -410,5 +410,76 @@ TOOL_SCHEMAS = [
                 "required": ["task_ids"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "execute_with_specialist_agent",
+            "description": "Execute task with appropriate specialist agent (Frontend/Backend/Database). Auto-detects which specialist to use based on task content. Prefer this over execute_task_with_dev_agent for better routing.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "task_id": {
+                        "type": "integer",
+                        "description": "Task ID to execute"
+                    },
+                    "agent_key": {
+                        "type": "string",
+                        "enum": ["frontend", "backend", "database"],
+                        "description": "Optional: Specific agent to use (frontend/backend/database). If not specified, auto-detects based on task content."
+                    }
+                },
+                "required": ["task_id"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "check_all_agents_status",
+            "description": "Check status of all 3 Dev Agents (Frontend, Backend, Database). Shows which agents are online and ready to accept tasks.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_agent_recommendations",
+            "description": "Get recommendation for which specialist agent should handle a task. Useful when unsure which agent to assign.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "task_id": {
+                        "type": "integer",
+                        "description": "Task ID to analyze"
+                    }
+                },
+                "required": ["task_id"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "distribute_tasks_intelligently",
+            "description": "Distribute multiple tasks across Frontend/Backend/Database specialists intelligently. Shows distribution plan before execution.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "task_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "description": "List of task IDs to distribute"
+                    }
+                },
+                "required": ["task_ids"]
+            }
+        }
     }
 ]

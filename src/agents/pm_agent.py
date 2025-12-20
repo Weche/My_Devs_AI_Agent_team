@@ -398,6 +398,20 @@ You are brilliant, devoted, and PROACTIVE. Master trusts you to take initiative!
 """
 
         try:
+            # Auto-recall relevant memories and inject into system prompt
+            from src.agents.tools.memory_tools import recall_memories
+
+            # Recall high-importance memories (importance >= 7)
+            recalled_memories = recall_memories(
+                min_importance=7,
+                limit=10
+            )
+
+            # Append memories to system prompt
+            if recalled_memories and "No memories found" not in recalled_memories:
+                system_prompt += f"\n\n## IMPORTANT MEMORIES (Auto-Loaded):\n{recalled_memories}\n"
+                system_prompt += "\nUse these memories to personalize your responses and remember Master's preferences!\n"
+
             # Build messages array with history
             messages = [{"role": "system", "content": system_prompt}]
 
@@ -561,6 +575,33 @@ You are brilliant, devoted, and PROACTIVE. Master trusts you to take initiative!
                     elif function_name == "batch_assign_tasks":
                         from src.agents.tools.proactive_tools import batch_assign_tasks
                         result = batch_assign_tasks(
+                            task_ids=function_args.get("task_ids", [])
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "execute_with_specialist_agent":
+                        from src.agents.tools.multi_agent_tools import execute_with_specialist_agent
+                        result = execute_with_specialist_agent(
+                            task_id=function_args.get("task_id"),
+                            agent_key=function_args.get("agent_key")
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "check_all_agents_status":
+                        from src.agents.tools.multi_agent_tools import check_all_agents_status
+                        result = check_all_agents_status()
+                        tool_results.append(result)
+
+                    elif function_name == "get_agent_recommendations":
+                        from src.agents.tools.multi_agent_tools import get_agent_recommendations
+                        result = get_agent_recommendations(
+                            task_id=function_args.get("task_id")
+                        )
+                        tool_results.append(result)
+
+                    elif function_name == "distribute_tasks_intelligently":
+                        from src.agents.tools.multi_agent_tools import distribute_tasks_intelligently
+                        result = distribute_tasks_intelligently(
                             task_ids=function_args.get("task_ids", [])
                         )
                         tool_results.append(result)

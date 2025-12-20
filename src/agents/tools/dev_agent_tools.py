@@ -1,6 +1,7 @@
 """Dev Agent Integration Tools - Execute tasks with StreamUI Dev Agent"""
 
 import requests
+import time
 from typing import Dict, Any
 
 DEV_AGENT_ENDPOINT = "http://localhost:3001"
@@ -22,49 +23,69 @@ def execute_task_with_dev_agent(task_id: int) -> str:
     Returns:
         Success message with files created or error message
     """
-    try:
-        response = requests.post(
-            f"{DEV_AGENT_ENDPOINT}/execute-task",
-            json={"task_id": task_id},
-            timeout=300  # 5 minute timeout for code generation
-        )
+    # Retry logic with exponential backoff
+    max_retries = 3
+    retry_delay = 1
 
-        result = response.json()
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(
+                f"{DEV_AGENT_ENDPOINT}/execute-task",
+                json={"task_id": task_id},
+                timeout=300  # 5 minute timeout for code generation
+            )
 
-        if result.get("success"):
-            files_created = result.get("files_created", [])
-            message = result.get("message", "Task executed successfully")
+            result = response.json()
 
-            response_text = f"✅ Dev Agent completed Task #{task_id}!\n\n{message}"
+            if result.get("success"):
+                files_created = result.get("files_created", [])
+                message = result.get("message", "Task executed successfully")
 
-            if files_created:
-                response_text += f"\n\n📁 Files created:\n"
-                for file in files_created:
-                    response_text += f"  • {file}\n"
+                response_text = f"✅ Dev Agent completed Task #{task_id}!\n\n{message}"
 
-            response_text += f"\n🔗 Code location: workspaces/[project-name]/"
-            response_text += f"\n✓ Task status updated to 'review'"
+                if files_created:
+                    response_text += f"\n\nFiles created:\n"
+                    for file in files_created:
+                        response_text += f"  - {file}\n"
 
-            return response_text
-        else:
-            error = result.get("error", "Unknown error")
-            return f"❌ Dev Agent failed to execute Task #{task_id}\n\nError: {error}"
+                response_text += f"\nCode location: workspaces/[project-name]/"
+                response_text += f"\nTask status updated to 'review'"
 
-    except requests.exceptions.ConnectionError:
-        return (
-            f"⚠️ Cannot connect to Dev Agent Service\n\n"
-            f"The Dev Agent service is not running. Please ensure it's started:\n"
-            f"  cd dev-agent-service\n"
-            f"  npm run dev"
-        )
-    except requests.exceptions.Timeout:
-        return (
-            f"⏱ Task #{task_id} execution timeout\n\n"
-            f"The Dev Agent is still working on it. This usually means the task is complex.\n"
-            f"Check the dev-agent-service terminal for progress."
-        )
-    except Exception as e:
-        return f"❌ Error calling Dev Agent: {str(e)}"
+                return response_text
+            else:
+                error = result.get("error", "Unknown error")
+                return f"Dev Agent failed to execute Task #{task_id}\n\nError: {error}"
+
+        except requests.exceptions.ConnectionError:
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+                retry_delay *= 2
+                continue
+            return (
+                f"Cannot connect to Dev Agent Service\n\n"
+                f"The Dev Agent service is not running. Please ensure it's started:\n"
+                f"  cd dev-agent-service\n"
+                f"  npm run dev"
+            )
+        except requests.exceptions.Timeout:
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+                retry_delay *= 2
+                continue
+            return (
+                f"Task #{task_id} execution timeout\n\n"
+                f"The Dev Agent is still working on it. This usually means the task is complex.\n"
+                f"Check the dev-agent-service terminal for progress."
+            )
+
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+                retry_delay *= 2
+                continue
+            return f"Error calling Dev Agent: {str(e)}"
+
+    return f"Failed after {max_retries} attempts"
 
 
 def check_dev_agent_status() -> str:

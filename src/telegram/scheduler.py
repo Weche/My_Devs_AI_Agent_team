@@ -70,6 +70,24 @@ class AlbedoScheduler:
             replace_existing=True
         )
 
+        # Proactive task monitoring - auto-assign high-priority tasks every 2 hours
+        self.scheduler.add_job(
+            self.proactive_task_monitoring,
+            CronTrigger(hour="*/2", timezone="America/Santiago"),
+            id="proactive_monitoring",
+            name="Proactive Task Monitoring",
+            replace_existing=True
+        )
+
+        # Suggest next actions twice daily (10 AM and 3 PM)
+        self.scheduler.add_job(
+            self.suggest_actions_periodically,
+            CronTrigger(hour="10,15", minute=0, timezone="America/Santiago"),
+            id="suggest_actions",
+            name="Suggest Next Actions",
+            replace_existing=True
+        )
+
         self.scheduler.start()
 
     def stop(self):
@@ -231,6 +249,64 @@ class AlbedoScheduler:
         except Exception as e:
             # Log error but don't crash scheduler
             print(f"Error checking GitHub updates: {str(e)}")
+
+    async def proactive_task_monitoring(self):
+        """Proactively check for idle/overdue tasks and auto-assign"""
+        from src.agents.tools.proactive_tools import suggest_next_actions, auto_assign_task
+        from src.agents.tools.query_tools import get_project_warnings_tool
+
+        try:
+            session = get_session()
+            projects = get_active_projects(session)
+
+            for project in projects:
+                # Get warnings (overdue/blocked tasks)
+                warnings = get_project_warnings_tool(project.name)
+
+                # Get TODO tasks
+                tasks = get_tasks_by_project(session, project.id, status="todo")
+
+                # Auto-assign overdue or high-priority TODO tasks
+                for task in tasks[:3]:  # Limit to top 3 tasks
+                    if task.priority in ["high", "critical"]:
+                        try:
+                            result = auto_assign_task(task.id)
+                            if "Auto-assigned" in result or "completed" in result.lower():
+                                await self.bot.send_message(
+                                    chat_id=self.authorized_user_id,
+                                    text=f"Proactive Assignment:\n\n{result}"
+                                )
+                        except Exception as e:
+                            print(f"Error auto-assigning task {task.id}: {str(e)}")
+
+                # Alert on warnings
+                if "Overdue" in warnings or "Blocked" in warnings:
+                    await self.bot.send_message(
+                        chat_id=self.authorized_user_id,
+                        text=f"Project Alert: {project.name}\n\n{warnings}"
+                    )
+
+            session.close()
+
+        except Exception as e:
+            print(f"Error in proactive task monitoring: {str(e)}")
+
+    async def suggest_actions_periodically(self):
+        """Periodically suggest next actions"""
+        from src.agents.tools.proactive_tools import suggest_next_actions
+
+        try:
+            suggestions = suggest_next_actions()
+
+            # Only send if there are actionable suggestions
+            if suggestions and "No urgent actions" not in suggestions:
+                await self.bot.send_message(
+                    chat_id=self.authorized_user_id,
+                    text=f"Proactive Suggestions:\n\n{suggestions}"
+                )
+
+        except Exception as e:
+            print(f"Error suggesting actions: {str(e)}")
 
 
 def setup_scheduler(bot: Bot, authorized_user_id: int) -> AlbedoScheduler:

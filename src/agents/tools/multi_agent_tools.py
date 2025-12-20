@@ -1,6 +1,7 @@
 """Multi-Agent Management - Intelligent routing to specialized Dev Agents"""
 
 import requests
+import time
 from typing import Optional, Dict, List
 from src.core.database import get_session, get_task_by_id
 
@@ -104,38 +105,59 @@ def execute_with_specialist_agent(task_id: int, agent_key: Optional[str] = None)
     endpoint = agent_info['endpoint']
     agent_name = agent_info['name']
 
-    try:
-        # Execute task on specialist agent
-        response = requests.post(
-            f"{endpoint}/execute-task",
-            json={"task_id": task_id},
-            timeout=300  # 5 minute timeout
-        )
+    # Retry logic with exponential backoff
+    max_retries = 3
+    retry_delay = 1  # seconds
 
-        result = response.json()
+    for attempt in range(max_retries):
+        try:
+            # Execute task on specialist agent
+            response = requests.post(
+                f"{endpoint}/execute-task",
+                json={"task_id": task_id},
+                timeout=300  # 5 minute timeout
+            )
 
-        if result.get("success"):
-            files_created = result.get("files_created", [])
-            response_text = f"✅ {agent_name} completed Task #{task_id}!\n\n"
-            response_text += f"📋 Specialty: {agent_info['specialty']}\n\n"
+            result = response.json()
 
-            if files_created:
-                response_text += f"📁 Files created:\n"
-                for file in files_created:
-                    response_text += f"  • {file}\n"
+            if result.get("success"):
+                files_created = result.get("files_created", [])
+                response_text = f"✅ {agent_name} completed Task #{task_id}!\n\n"
+                response_text += f"Specialty: {agent_info['specialty']}\n\n"
 
-            return response_text
-        else:
-            error = result.get("error", "Unknown error")
-            return f"❌ {agent_name} failed: {error}"
+                if files_created:
+                    response_text += f"Files created:\n"
+                    for file in files_created:
+                        response_text += f"  - {file}\n"
 
-    except requests.exceptions.ConnectionError:
-        return f"⚠️ Cannot connect to {agent_name} at {endpoint}\n" \
-               f"Make sure the agent is running: cd dev-agents/{agent_key}-agent && npm run dev"
-    except requests.exceptions.Timeout:
-        return f"⏱️ {agent_name} timed out after 5 minutes"
-    except Exception as e:
-        return f"❌ Error executing with {agent_name}: {str(e)}"
+                return response_text
+            else:
+                error = result.get("error", "Unknown error")
+                return f"Error: {agent_name} failed: {error}"
+
+        except requests.exceptions.ConnectionError as e:
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+                continue
+            return f"Cannot connect to {agent_name} at {endpoint}\n" \
+                   f"Make sure the agent is running: cd dev-agents/{agent_key}-agent && npm run dev"
+
+        except requests.exceptions.Timeout:
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+                retry_delay *= 2
+                continue
+            return f"Timeout: {agent_name} timed out after 5 minutes"
+
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+                retry_delay *= 2
+                continue
+            return f"Error executing with {agent_name}: {str(e)}"
+
+    return f"Failed after {max_retries} attempts"
 
 
 def check_agent_status(agent_key: str) -> Dict:
