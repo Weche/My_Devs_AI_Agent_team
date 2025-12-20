@@ -3,7 +3,7 @@
 import requests
 import time
 from typing import Optional, Dict, List
-from src.core.database import get_session, get_task_by_id
+from src.core.database import get_session, Task
 
 
 # Dev Agent endpoints
@@ -83,7 +83,7 @@ def execute_with_specialist_agent(task_id: int, agent_key: Optional[str] = None)
         Execution result message
     """
     session = get_session()
-    task = get_task_by_id(session, task_id)
+    task = session.query(Task).filter(Task.id == task_id).first()
     session.close()
 
     if not task:
@@ -231,7 +231,7 @@ def get_agent_recommendations(task_id: int) -> str:
         Recommendation message
     """
     session = get_session()
-    task = get_task_by_id(session, task_id)
+    task = session.query(Task).filter(Task.id == task_id).first()
     session.close()
 
     if not task:

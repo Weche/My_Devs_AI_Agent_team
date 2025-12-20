@@ -1,7 +1,7 @@
 """Proactive Tools - Auto-assignment and suggestion tools for Albedo"""
 
 from typing import Optional
-from src.core.database import get_session, get_task_by_id, get_active_projects
+from src.core.database import get_session, get_active_projects, Task
 from src.agents.tools.task_tools import get_tasks_tool
 from src.agents.tools.query_tools import get_project_warnings_tool
 from src.agents.tools.multi_agent_tools import execute_with_specialist_agent
@@ -20,7 +20,7 @@ def auto_assign_task(task_id: int) -> str:
         Assignment result message
     """
     session = get_session()
-    task = get_task_by_id(session, task_id)
+    task = session.query(Task).filter(Task.id == task_id).first()
     session.close()
 
     if not task:
