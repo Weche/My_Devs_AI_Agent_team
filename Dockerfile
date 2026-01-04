@@ -7,7 +7,7 @@ FROM node:24-slim AS node-builder
 WORKDIR /app/dev-agents
 
 # Copy package files
-COPY dev-agents/package.json dev-agents/orchestrator.js dev-agents/shared-env.js ./
+COPY dev-agents/package.json dev-agents/orchestrator.js dev-agents/shared-env.js dev-agents/shared-env.d.ts ./
 
 # Copy all 3 agents
 COPY dev-agents/frontend-agent ./frontend-agent
