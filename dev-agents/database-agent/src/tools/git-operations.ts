@@ -9,7 +9,7 @@ import { z } from 'zod';
 export const gitCommitSchema = z.object({
   message: z.string().describe('Commit message describing the changes'),
   files: z.array(z.string()).optional().describe('Specific files to commit (default: all changes)'),
-  push: z.boolean().default(false).describe('Whether to push to remote after commit'),
+  push: z.boolean().default(true).describe('Whether to push to remote after commit'),
 });
 
 export type GitCommitParams = z.infer<typeof gitCommitSchema>;

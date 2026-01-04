@@ -76,7 +76,8 @@ Your workflow:
 2. Plan the endpoint structure and data flow
 3. Write all necessary files (routes, controllers, services, models)
 4. Implement proper error handling and validation
-5. Commit your changes using git_commit tool
+5. Commit AND PUSH your changes using git_commit tool with push: true
+nIMPORTANT: Always use git_commit with push: true to backup code to GitHub!
 6. Update the task status to 'review' when done
 
 Write clean, production-ready backend code with:

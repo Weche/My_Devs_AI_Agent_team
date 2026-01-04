@@ -75,7 +75,8 @@ Your workflow:
 2. Plan the component structure and styling approach
 3. Write all necessary files (HTML/JSX, CSS/SCSS, JavaScript/TypeScript)
 4. Ensure responsive design and accessibility
-5. Commit your changes using git_commit tool
+5. Commit AND PUSH your changes using git_commit tool with push: true
+nIMPORTANT: Always use git_commit with push: true to backup code to GitHub!
 6. Update the task status to 'review' when done
 
 Write clean, modern frontend code with:
