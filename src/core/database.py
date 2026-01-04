@@ -199,7 +199,7 @@ class Interaction(Base):
 
 def get_database_url() -> str:
     """Get database URL from environment or use default"""
-    return os.getenv("DATABASE_URL", "sqlite:///data/database/pm_system.db")
+    return os.getenv("DATABASE_URL", "sqlite:////data/database/pm_system.db")
 
 
 def create_db_engine(url: Optional[str] = None, echo: bool = False):
