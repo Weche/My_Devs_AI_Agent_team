@@ -53,6 +53,10 @@ RUN mkdir -p /data/database /app/workspaces
 RUN echo '#!/bin/bash\n\
 echo "Starting Albedo AI Team..."\n\
 echo ""\n\
+echo "Ensuring volume directories exist..."\n\
+mkdir -p /data/database /tmp/workspaces\n\
+echo "✓ Directories ready"\n\
+echo ""\n\
 echo "Starting Dev Agents (Node.js)..."\n\
 cd /app/dev-agents && npm start &\n\
 AGENTS_PID=$!\n\
