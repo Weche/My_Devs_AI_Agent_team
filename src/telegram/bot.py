@@ -31,6 +31,7 @@ from src.telegram.handlers import (
     message_handler,
 )
 from src.telegram.scheduler import setup_scheduler
+from src.core.database import create_all_tables
 
 # Load environment variables
 load_dotenv()
@@ -65,6 +66,15 @@ def main():
 
     logger.info("Starting My Devs AI Agent Team bot...")
     logger.info(f"Authorized users: {authorized_users if authorized_users else 'ALL (not secure!)'}")
+
+    # Initialize database tables
+    logger.info("Initializing database...")
+    try:
+        create_all_tables()
+        logger.info("✅ Database tables initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+        sys.exit(1)
 
     # Create application
     application = Application.builder().token(token).build()
