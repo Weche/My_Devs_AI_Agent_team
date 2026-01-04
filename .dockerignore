@@ -1,0 +1,71 @@
+# Dockerignore - What NOT to include in the Docker image
+
+# CRITICAL: Never include .env files with secrets!
+.env
+.env.*
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+dev-agents/*/node_modules/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+logs/
+
+# Database (will be on volume)
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Deployment scripts
+*.ps1
+cleanup-and-deploy.ps1
+suspend-old-apps.ps1
+flyio-setup.ps1
+
+# Workspaces (will be on volume)
+workspaces/

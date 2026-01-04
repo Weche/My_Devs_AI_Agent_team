@@ -1,0 +1,62 @@
+# Fly.io configuration for Albedo AI Team
+# This deploys Python Telegram Bot + 3 Node.js Dev Agents in one app
+
+app = "albedo-ai-team"
+primary_region = "scl"  # Santiago, Chile (closest to you)
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  # Non-sensitive environment variables
+  PORT = "8080"
+  PYTHON_VERSION = "3.13"
+  NODE_VERSION = "24"
+
+  # Database will be on volume
+  DATABASE_URL = "sqlite:////data/database/pm_system.db"
+  DATABASE_PATH = "/data/database/pm_system.db"
+  WORKSPACE_DIR = "/app/workspaces"
+
+# VM configuration
+[vm]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
+
+# Persistent volume for database
+[mounts]
+  source = "albedo_data"
+  destination = "/data"
+  initial_size = "3gb"
+
+# Health check (optional - Telegram doesn't need HTTP)
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  # Health check on dev agents
+  [[services.http_checks]]
+    interval = "30s"
+    timeout = "10s"
+    grace_period = "30s"
+    method = "GET"
+    path = "/health"
+    protocol = "http"
+    port = 3001
+
+# Restart policy
+[restart]
+  policy = "on-failure"
+  max_retries = 3
