@@ -56,7 +56,4 @@ primary_region = "scl"  # Santiago, Chile (closest to you)
     protocol = "http"
     port = 3001
 
-# Restart policy
-[restart]
-  policy = "on-failure"
-  max_retries = 3
+# Restart policy (removed - use services.auto_start_machines instead)
