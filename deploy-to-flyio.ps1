@@ -53,8 +53,8 @@ $volumeExists = flyctl volumes list -a albedo-ai-team 2>&1 | Select-String "albe
 if ($volumeExists) {
     Write-Host "ℹ️  Volume 'albedo_data' already exists, skipping creation" -ForegroundColor Gray
 } else {
-    Write-Host "Creating 3GB volume in Santiago..." -ForegroundColor Gray
-    flyctl volumes create albedo_data --size 3 --region scl -a albedo-ai-team
+    Write-Host "Creating 1GB volume in Santiago (database only, workspaces use GitHub)..." -ForegroundColor Gray
+    flyctl volumes create albedo_data --size 1 --region scl -a albedo-ai-team
     Write-Host "✅ Volume created" -ForegroundColor Green
 }
 

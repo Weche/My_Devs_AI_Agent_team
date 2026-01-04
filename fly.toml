@@ -16,7 +16,7 @@ primary_region = "scl"  # Santiago, Chile (closest to you)
   # Database will be on volume
   DATABASE_URL = "sqlite:////data/database/pm_system.db"
   DATABASE_PATH = "/data/database/pm_system.db"
-  WORKSPACE_DIR = "/app/workspaces"
+  WORKSPACE_DIR = "/tmp/workspaces"
 
 # VM configuration
 [vm]
@@ -28,7 +28,7 @@ primary_region = "scl"  # Santiago, Chile (closest to you)
 [mounts]
   source = "albedo_data"
   destination = "/data"
-  initial_size = "3gb"
+  initial_size = "1gb"
 
 # Health check (optional - Telegram doesn't need HTTP)
 [[services]]
