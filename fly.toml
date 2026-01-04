@@ -2,7 +2,7 @@
 # This deploys Python Telegram Bot + 3 Node.js Dev Agents in one app
 
 app = "albedo-ai-team"
-primary_region = "scl"  # Santiago, Chile (closest to you)
+primary_region = "gru"  # São Paulo, Brazil (closest available region)
 
 [build]
   dockerfile = "Dockerfile"
