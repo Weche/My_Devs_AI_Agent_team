@@ -8,5 +8,8 @@
   },
   "keywords": ["agents", "orchestrator"],
   "author": "Christian Orquera",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
 }
